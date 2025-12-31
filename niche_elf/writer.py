@@ -49,12 +49,16 @@ class ELFWriter:
                 name_offset=name_offsets[s.name],
                 bind=s.bind,
                 typ=s.typ,
-                shndx=1,
+                shndx=1,  # Sucks that we are hardcoding, this is .text
                 value=s.value,
                 size=s.size,
             )
             for s in symbols
         ]
+
+        # There is an implicit NULL section at index 0. We add symtab then strtab,
+        # so the strtab index = len(self.sections) - 1 + 1 + 2
+        strtab_index = len(self.sections) + 2
 
         symtab_data = b"".join(e.pack() for e in symtab_entries)
         symtab_sec = Section(
@@ -64,7 +68,7 @@ class ELFWriter:
             data=symtab_data,
             align=8,
             entsize=24,
-            link=0,  # updated later
+            link=strtab_index,
             info=1,
         )
         symtab_sec.name_offset = self.shstrtab.add(symtab_sec.name)
@@ -79,9 +83,6 @@ class ELFWriter:
         )
         strtab_sec.name_offset = self.shstrtab.add(strtab_sec.name)
         self.sections.append(strtab_sec)
-
-        # fix symtab link to strtab index
-        symtab_sec.link = len(self.sections) - 1
 
     def write(self, path: str) -> None:
         # compute offsets
