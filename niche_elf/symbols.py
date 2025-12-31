@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from elftools.elf.enums import ENUM_ST_INFO_BIND, ENUM_ST_INFO_TYPE
 
+
 @dataclass
 class Symbol:
     name: str

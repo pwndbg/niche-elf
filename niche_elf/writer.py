@@ -1,13 +1,14 @@
 import struct
 from elftools.elf.constants import SH_TYPE, SH_FLAGS
 from elftools.elf.enums import ENUM_E_TYPE, ENUM_E_MACHINE
-from elftools.elf.enums import ENUM_ST_INFO_BIND, ENUM_ST_INFO_TYPE
 
 ELFCLASS64 = 2
 ELFDATA2LSB = 1
 
+
 def align(off, a):
     return (off + a - 1) & ~(a - 1)
+
 
 class ELFWriter:
     def __init__(self):
@@ -15,16 +16,18 @@ class ELFWriter:
         self.section_names = [""]
 
     def add_text_section(self, data: bytes):
-        self.sections.append({
-            "name": ".text",
-            "type": SH_TYPE.SHT_PROGBITS,
-            "flags": SH_FLAGS.SHF_ALLOC | SH_FLAGS.SHF_EXECINSTR,
-            "data": data,
-            "align": 4,
-            "entsize": 0,
-            "link": 0,
-            "info": 0,
-        })
+        self.sections.append(
+            {
+                "name": ".text",
+                "type": SH_TYPE.SHT_PROGBITS,
+                "flags": SH_FLAGS.SHF_ALLOC | SH_FLAGS.SHF_EXECINSTR,
+                "data": data,
+                "align": 4,
+                "entsize": 0,
+                "link": 0,
+                "info": 0,
+            }
+        )
 
     def add_symbols(self, symbols):
         strtab = b"\x00"
@@ -47,27 +50,31 @@ class ELFWriter:
                 s.size,
             )
 
-        self.sections.append({
-            "name": ".symtab",
-            "type": SH_TYPE.SHT_SYMTAB,
-            "flags": 0,
-            "data": symtab,
-            "align": 8,
-            "entsize": 24,
-            "link": 3,
-            "info": 1,
-        })
+        self.sections.append(
+            {
+                "name": ".symtab",
+                "type": SH_TYPE.SHT_SYMTAB,
+                "flags": 0,
+                "data": symtab,
+                "align": 8,
+                "entsize": 24,
+                "link": 3,
+                "info": 1,
+            }
+        )
 
-        self.sections.append({
-            "name": ".strtab",
-            "type": SH_TYPE.SHT_STRTAB,
-            "flags": 0,
-            "data": strtab,
-            "align": 1,
-            "entsize": 0,
-            "link": 0,
-            "info": 0,
-        })
+        self.sections.append(
+            {
+                "name": ".strtab",
+                "type": SH_TYPE.SHT_STRTAB,
+                "flags": 0,
+                "data": strtab,
+                "align": 1,
+                "entsize": 0,
+                "link": 0,
+                "info": 0,
+            }
+        )
 
     def write(self, path):
         shstrtab = b"\x00"
@@ -97,13 +104,12 @@ class ELFWriter:
 
         elf_header = struct.pack(
             "<16sHHIQQQIHHHHHH",
-            b"\x7fELF" +
-            bytes([ELFCLASS64, ELFDATA2LSB, 1, 0]) +
-            b"\x00" * 8,
+            b"\x7fELF" + bytes([ELFCLASS64, ELFDATA2LSB, 1, 0]) + b"\x00" * 8,
             ENUM_E_TYPE["ET_REL"],
             ENUM_E_MACHINE["EM_X86_64"],
             1,
-            0, 0,
+            0,
+            0,
             shoff,
             0,
             64,
@@ -128,30 +134,34 @@ class ELFWriter:
             f.write(b"\x00" * 64)
 
             for s, off in zip(self.sections, section_offsets):
-                f.write(struct.pack(
-                    "<IIQQQQIIQQ",
-                    name_offsets[s["name"]],
-                    s["type"],
-                    s["flags"],
-                    0,
-                    off,
-                    len(s["data"]),
-                    s["link"],
-                    s["info"],
-                    s["align"],
-                    s["entsize"],
-                ))
+                f.write(
+                    struct.pack(
+                        "<IIQQQQIIQQ",
+                        name_offsets[s["name"]],
+                        s["type"],
+                        s["flags"],
+                        0,
+                        off,
+                        len(s["data"]),
+                        s["link"],
+                        s["info"],
+                        s["align"],
+                        s["entsize"],
+                    )
+                )
 
-            f.write(struct.pack(
-                "<IIQQQQIIQQ",
-                shstrtab_name_off,
-                SH_TYPE.SHT_STRTAB,
-                0,
-                0,
-                shstrtab_off,
-                len(shstrtab),
-                0,
-                0,
-                1,
-                0,
-            ))
+            f.write(
+                struct.pack(
+                    "<IIQQQQIIQQ",
+                    shstrtab_name_off,
+                    SH_TYPE.SHT_STRTAB,
+                    0,
+                    0,
+                    shstrtab_off,
+                    len(shstrtab),
+                    0,
+                    0,
+                    1,
+                    0,
+                )
+            )

@@ -1,8 +1,6 @@
-import struct
-from elftools.elf.constants import SH_TYPE, SH_FLAGS
-from elftools.elf.enums import ENUM_E_TYPE, ENUM_E_MACHINE
 from .writer import ELFWriter
 from .symbols import Symbol
+
 
 class ELFFile:
     def __init__(self, arch="x86_64"):
