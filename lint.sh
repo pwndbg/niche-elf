@@ -1,7 +1,10 @@
 #!/bin/sh
 
 set -o errexit
+set -o xtrace
 
-uv run ruff format niche_elf
-uv run ruff check --fix --output-format=full niche_elf
-uv run mypy --strict niche_elf
+LINT_FILES="niche_elf examples"
+
+uv run ruff format $LINT_FILES
+uv run ruff check --fix --output-format=full $LINT_FILES
+uv run mypy --strict $LINT_FILES

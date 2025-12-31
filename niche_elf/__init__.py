@@ -1,3 +1,5 @@
+"""The niche-elf library."""
+
 from .elf import ELFFile
 from .symbols import Symbol
 

@@ -1,7 +1,13 @@
+"""Handles actually crafting the ELF file."""
+
 import struct
-from .symbols import Symbol
+from pathlib import Path
+from typing import Any
+
 from elftools.elf.constants import SH_FLAGS
-from elftools.elf.enums import ENUM_E_TYPE, ENUM_E_MACHINE, ENUM_SH_TYPE_BASE
+from elftools.elf.enums import ENUM_E_MACHINE, ENUM_E_TYPE, ENUM_SH_TYPE_BASE
+
+from .symbols import Symbol
 
 ELFCLASS64 = 2
 ELFDATA2LSB = 1
@@ -12,9 +18,11 @@ def align(off: int, a: int) -> int:
 
 
 class ELFWriter:
+    """The ELF file builder."""
+
     def __init__(self) -> None:
-        self.sections = []
-        self.section_names = [""]
+        self.sections: list[dict[str, Any]] = []
+        self.section_names: list[str] = [""]
 
     def add_text_section(self, data: bytes) -> None:
         self.sections.append(
@@ -27,7 +35,7 @@ class ELFWriter:
                 "entsize": 0,
                 "link": 0,
                 "info": 0,
-            }
+            },
         )
 
     def add_symbols(self, symbols: list[Symbol]) -> None:
@@ -61,7 +69,7 @@ class ELFWriter:
                 "entsize": 24,
                 "link": 3,
                 "info": 1,
-            }
+            },
         )
 
         self.sections.append(
@@ -74,7 +82,7 @@ class ELFWriter:
                 "entsize": 0,
                 "link": 0,
                 "info": 0,
-            }
+            },
         )
 
     def write(self, path: str) -> None:
@@ -121,10 +129,10 @@ class ELFWriter:
             shstrndx,
         )
 
-        with open(path, "wb") as f:
+        with Path(path).open("wb") as f:
             f.write(elf_header)
 
-            for s, off in zip(self.sections, section_offsets):
+            for s, off in zip(self.sections, section_offsets, strict=True):
                 f.seek(off)
                 f.write(s["data"])
 
@@ -134,7 +142,7 @@ class ELFWriter:
             f.seek(shoff)
             f.write(b"\x00" * 64)
 
-            for s, off in zip(self.sections, section_offsets):
+            for s, off in zip(self.sections, section_offsets, strict=True):
                 f.write(
                     struct.pack(
                         "<IIQQQQIIQQ",
@@ -148,7 +156,7 @@ class ELFWriter:
                         s["info"],
                         s["align"],
                         s["entsize"],
-                    )
+                    ),
                 )
 
             f.write(
@@ -164,5 +172,5 @@ class ELFWriter:
                     0,
                     1,
                     0,
-                )
+                ),
             )
