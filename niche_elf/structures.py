@@ -16,11 +16,21 @@ class Symbol:
     name: str
     bind: int
     typ: int
+    value: int
     size: int = 8
-    value: int = 0
 
     @classmethod
-    def function(cls, name: str, addr: int) -> Symbol:
+    def generic(cls, name: str, addr: int) -> Symbol:
+        return cls(
+            name=name,
+            bind=cast("int", ENUM_ST_INFO_BIND["STB_GLOBAL"]),
+            # LIEF emits this type, so I trust.
+            typ=cast("int", ENUM_ST_INFO_TYPE["STT_COMMON"]),
+            value=addr,
+        )
+
+    @classmethod
+    def _function(cls, name: str, addr: int) -> Symbol:
         return cls(
             name=name,
             bind=cast("int", ENUM_ST_INFO_BIND["STB_GLOBAL"]),
@@ -29,7 +39,7 @@ class Symbol:
         )
 
     @classmethod
-    def object(cls, name: str, addr: int) -> Symbol:
+    def _object(cls, name: str, addr: int) -> Symbol:
         return cls(
             name=name,
             bind=cast("int", ENUM_ST_INFO_BIND["STB_GLOBAL"]),

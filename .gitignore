@@ -4,3 +4,7 @@ niche_elf.egg-info
 **/.gdb_history
 symbols.o
 dist
+lief.elf
+objcopy.elf
+mine.elf
+other.elf
