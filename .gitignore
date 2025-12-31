@@ -8,3 +8,4 @@ lief.elf
 objcopy.elf
 mine.elf
 other.elf
+gef-kernel.elf

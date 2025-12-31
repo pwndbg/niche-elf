@@ -1,7 +1,13 @@
 """The main library entrypoint."""
 
+from typing import cast
+
+from elftools.elf.enums import ENUM_ST_INFO_BIND
+
 from .structures import Symbol
 from .writer import ELFWriter
+
+DEFAULT_BIND: int = cast("int", ENUM_ST_INFO_BIND["STB_GLOBAL"])
 
 
 class ELFFile:
@@ -12,8 +18,17 @@ class ELFFile:
         self.symbols: list[Symbol] = []
         self.text = b"\x90\x90\x90"
 
-    def add_symbol(self, name: str, addr: int) -> None:
-        self.symbols.append(Symbol.generic(name, addr))
+    def add_generic_symbol(self, name: str, addr: int, bind: int = DEFAULT_BIND) -> None:
+        """If you don't know whether the symbols is a function or global variable use this."""
+        self.symbols.append(Symbol.generic(name, addr, bind))
+
+    def add_function(self, name: str, addr: int, bind: int = DEFAULT_BIND) -> None:
+        """Use this if you know the symbol is a function."""
+        self.symbols.append(Symbol.function(name, addr, bind))
+
+    def add_object(self, name: str, addr: int, bind: int = DEFAULT_BIND) -> None:
+        """Use this if you know the symbols is a global or local variable."""
+        self.symbols.append(Symbol.object(name, addr, bind))
 
     def write(self, path: str) -> None:
         writer = ELFWriter()

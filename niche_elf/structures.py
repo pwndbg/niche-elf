@@ -6,7 +6,7 @@ import struct
 from dataclasses import dataclass, field
 from typing import cast
 
-from elftools.elf.enums import ENUM_E_MACHINE, ENUM_E_TYPE, ENUM_ST_INFO_BIND, ENUM_ST_INFO_TYPE
+from elftools.elf.enums import ENUM_E_MACHINE, ENUM_E_TYPE, ENUM_ST_INFO_TYPE
 
 
 @dataclass
@@ -20,29 +20,29 @@ class Symbol:
     size: int = 8
 
     @classmethod
-    def generic(cls, name: str, addr: int) -> Symbol:
+    def generic(cls, name: str, addr: int, bind: int) -> Symbol:
         return cls(
             name=name,
-            bind=cast("int", ENUM_ST_INFO_BIND["STB_GLOBAL"]),
+            bind=bind,
             # LIEF emits this type, so I trust.
             typ=cast("int", ENUM_ST_INFO_TYPE["STT_COMMON"]),
             value=addr,
         )
 
     @classmethod
-    def _function(cls, name: str, addr: int) -> Symbol:
+    def function(cls, name: str, addr: int, bind: int) -> Symbol:
         return cls(
             name=name,
-            bind=cast("int", ENUM_ST_INFO_BIND["STB_GLOBAL"]),
+            bind=bind,
             typ=cast("int", ENUM_ST_INFO_TYPE["STT_FUNC"]),
             value=addr,
         )
 
     @classmethod
-    def _object(cls, name: str, addr: int) -> Symbol:
+    def object(cls, name: str, addr: int, bind: int) -> Symbol:
         return cls(
             name=name,
-            bind=cast("int", ENUM_ST_INFO_BIND["STB_GLOBAL"]),
+            bind=bind,
             typ=cast("int", ENUM_ST_INFO_TYPE["STT_OBJECT"]),
             value=addr,
         )
