@@ -309,6 +309,39 @@ class ElfEhdr32(ctypes.Structure):
         ("e_shstrndx", Elf32_Half),
     ]
 
+    def __init__(
+        self,
+        e_ident: bytes | bytearray,
+        e_type: int,
+        e_machine: int,
+        e_version: int,
+        e_entry: int,
+        e_phoff: int,
+        e_shoff: int,
+        e_flags: int,
+        e_ehsize: int,
+        e_phentsize: int,
+        e_phnum: int,
+        e_shentsize: int,
+        e_shnum: int,
+        e_shstrndx: int,
+    ) -> None:
+        super().__init__()
+        self.e_ident = e_ident
+        self.e_type = e_type
+        self.e_machine = e_machine
+        self.e_version = e_version
+        self.e_entry = e_entry
+        self.e_phoff = e_phoff
+        self.e_shoff = e_shoff
+        self.e_flags = e_flags
+        self.e_ehsize = e_ehsize
+        self.e_phentsize = e_phentsize
+        self.e_phnum = e_phnum
+        self.e_shentsize = e_shentsize
+        self.e_shnum = e_shnum
+        self.e_shstrndx = e_shstrndx
+
 
 class ElfEhdr64(ctypes.Structure):
     _fields_: typing.ClassVar = [
@@ -328,6 +361,39 @@ class ElfEhdr64(ctypes.Structure):
         ("e_shstrndx", Elf64_Half),
     ]
 
+    def __init__(
+        self,
+        e_ident: bytes | bytearray,
+        e_type: int,
+        e_machine: int,
+        e_version: int,
+        e_entry: int,
+        e_phoff: int,
+        e_shoff: int,
+        e_flags: int,
+        e_ehsize: int,
+        e_phentsize: int,
+        e_phnum: int,
+        e_shentsize: int,
+        e_shnum: int,
+        e_shstrndx: int,
+    ) -> None:
+        super().__init__()
+        self.e_ident = e_ident
+        self.e_type = e_type
+        self.e_machine = e_machine
+        self.e_version = e_version
+        self.e_entry = e_entry
+        self.e_phoff = e_phoff
+        self.e_shoff = e_shoff
+        self.e_flags = e_flags
+        self.e_ehsize = e_ehsize
+        self.e_phentsize = e_phentsize
+        self.e_phnum = e_phnum
+        self.e_shentsize = e_shentsize
+        self.e_shnum = e_shnum
+        self.e_shstrndx = e_shstrndx
+
 
 class ElfPhdr32(ctypes.Structure):
     _fields_: typing.ClassVar = [
@@ -341,6 +407,27 @@ class ElfPhdr32(ctypes.Structure):
         ("p_align", Elf32_Word),
     ]
 
+    def __init__(
+        self,
+        p_type: int,
+        p_offset: int,
+        p_vaddr: int,
+        p_paddr: int,
+        p_filesz: int,
+        p_memsz: int,
+        p_flags: int,
+        p_align: int,
+    ) -> None:
+        super().__init__()
+        self.p_type = p_type
+        self.p_offset = p_offset
+        self.p_vaddr = p_vaddr
+        self.p_paddr = p_paddr
+        self.p_filesz = p_filesz
+        self.p_memsz = p_memsz
+        self.p_flags = p_flags
+        self.p_align = p_align
+
 
 class ElfPhdr64(ctypes.Structure):
     _fields_: typing.ClassVar = [
@@ -353,6 +440,27 @@ class ElfPhdr64(ctypes.Structure):
         ("p_memsz", Elf64_Xword),
         ("p_align", Elf64_Xword),
     ]
+
+    def __init__(
+        self,
+        p_type: int,
+        p_flags: int,
+        p_offset: int,
+        p_vaddr: int,
+        p_paddr: int,
+        p_filesz: int,
+        p_memsz: int,
+        p_align: int,
+    ) -> None:
+        super().__init__()
+        self.p_type = p_type
+        self.p_flags = p_flags
+        self.p_offset = p_offset
+        self.p_vaddr = p_vaddr
+        self.p_paddr = p_paddr
+        self.p_filesz = p_filesz
+        self.p_memsz = p_memsz
+        self.p_align = p_align
 
 
 class ElfShdr32(ctypes.Structure):
@@ -369,6 +477,31 @@ class ElfShdr32(ctypes.Structure):
         ("sh_entsize", Elf32_Word),
     ]
 
+    def __init__(
+        self,
+        sh_name: int,
+        sh_type: int,
+        sh_flags: int,
+        sh_addr: int,
+        sh_offset: int,
+        sh_size: int,
+        sh_link: int,
+        sh_info: int,
+        sh_addralign: int,
+        sh_entsize: int,
+    ) -> None:
+        super().__init__()
+        self.sh_name = sh_name
+        self.sh_type = sh_type
+        self.sh_flags = sh_flags
+        self.sh_addr = sh_addr
+        self.sh_offset = sh_offset
+        self.sh_size = sh_size
+        self.sh_link = sh_link
+        self.sh_info = sh_info
+        self.sh_addralign = sh_addralign
+        self.sh_entsize = sh_entsize
+
 
 class ElfShdr64(ctypes.Structure):
     _fields_: typing.ClassVar = [
@@ -384,35 +517,80 @@ class ElfShdr64(ctypes.Structure):
         ("sh_entsize", Elf64_Xword),
     ]
 
+    def __init__(
+        self,
+        sh_name: int,
+        sh_type: int,
+        sh_flags: int,
+        sh_addr: int,
+        sh_offset: int,
+        sh_size: int,
+        sh_link: int,
+        sh_info: int,
+        sh_addralign: int,
+        sh_entsize: int,
+    ) -> None:
+        super().__init__()
+        self.sh_name = sh_name
+        self.sh_type = sh_type
+        self.sh_flags = sh_flags
+        self.sh_addr = sh_addr
+        self.sh_offset = sh_offset
+        self.sh_size = sh_size
+        self.sh_link = sh_link
+        self.sh_info = sh_info
+        self.sh_addralign = sh_addralign
+        self.sh_entsize = sh_entsize
 
-class _uElfDyn32(ctypes.Union):  # noqa: N801
+
+class ElfDynUN32(ctypes.Union):
     _fields_: typing.ClassVar = [
         ("d_val", Elf32_Sword),
         ("d_ptr", Elf32_Addr),
     ]
+
+    def __init__(self, d_val: int, d_ptr: int) -> None:
+        super().__init__()
+        self.d_val = d_val
+        self.d_ptr = d_ptr
 
 
 class ElfDyn32(ctypes.Structure):
     _anonymous_ = ("d_un",)
     _fields_: typing.ClassVar = [
         ("d_tag", Elf32_Sword),
-        ("d_un", _uElfDyn32),
+        ("d_un", ElfDynUN32),
     ]
 
+    def __init__(self, d_tag: int, d_un: ElfDynUN32) -> None:
+        super().__init__()
+        self.d_tag = d_tag
+        self.d_un = d_un
 
-class _uElfDyn64(ctypes.Union):  # noqa: N801
+
+class ElfDynUN64(ctypes.Union):
     _fields_: typing.ClassVar = [
         ("d_val", Elf64_Xword),
         ("d_ptr", Elf64_Addr),
     ]
+
+    def __init__(self, d_val: int, d_ptr: int) -> None:
+        super().__init__()
+        self.d_val = d_val
+        self.d_ptr = d_ptr
 
 
 class ElfDyn64(ctypes.Structure):
     _anonymous_ = ("d_un",)
     _fields_: typing.ClassVar = [
         ("d_tag", Elf64_Sxword),
-        ("d_un", _uElfDyn64),
+        ("d_un", ElfDynUN64),
     ]
+
+    def __init__(self, d_tag: int, d_un: ElfDynUN64) -> None:
+        super().__init__()
+        self.d_tag = d_tag
+        self.d_un = d_un
 
 
 class ElfSym32(ctypes.Structure):
@@ -425,6 +603,23 @@ class ElfSym32(ctypes.Structure):
         ("st_shndx", Elf32_Half),
     ]
 
+    def __init__(
+        self,
+        st_name: int,
+        st_value: int,
+        st_size: int,
+        st_info: int,
+        st_other: int,
+        st_shndx: int,
+    ) -> None:
+        super().__init__()
+        self.st_name = st_name
+        self.st_value = st_value
+        self.st_size = st_size
+        self.st_info = st_info
+        self.st_other = st_other
+        self.st_shndx = st_shndx
+
 
 class ElfSym64(ctypes.Structure):
     _fields_: typing.ClassVar = [
@@ -436,6 +631,23 @@ class ElfSym64(ctypes.Structure):
         ("st_size", Elf64_Xword),
     ]
 
+    def __init__(
+        self,
+        st_name: int,
+        st_info: int,
+        st_other: int,
+        st_shndx: int,
+        st_value: int,
+        st_size: int,
+    ) -> None:
+        super().__init__()
+        self.st_name = st_name
+        self.st_info = st_info
+        self.st_other = st_other
+        self.st_shndx = st_shndx
+        self.st_value = st_value
+        self.st_size = st_size
+
 
 class ElfRel64(ctypes.Structure):
     _fields_: typing.ClassVar = [
@@ -444,12 +656,28 @@ class ElfRel64(ctypes.Structure):
         ("r_addend", Elf64_Sxword),
     ]
 
+    def __init__(
+        self,
+        r_offset: int,
+        r_info: int,
+        r_addend: int,
+    ) -> None:
+        super().__init__()
+        self.r_offset = r_offset
+        self.r_info = r_info
+        self.r_addend = r_addend
+
 
 class ElfRel32(ctypes.Structure):
     _fields_: typing.ClassVar = [
         ("r_offset", Elf32_Addr),
         ("r_info", Elf32_Word),
     ]
+
+    def __init__(self, r_offset: int, r_info: int) -> None:
+        super().__init__()
+        self.r_offset = r_offset
+        self.r_info = r_info
 
 
 class ElfLinkMap32(ctypes.Structure):
@@ -461,6 +689,21 @@ class ElfLinkMap32(ctypes.Structure):
         ("l_prev", Elf32_Addr),
     ]
 
+    def __init__(
+        self,
+        l_addr: int,
+        l_name: int,
+        l_ld: int,
+        l_next: int,
+        l_prev: int,
+    ) -> None:
+        super().__init__()
+        self.l_addr = l_addr
+        self.l_name = l_name
+        self.l_ld = l_ld
+        self.l_next = l_next
+        self.l_prev = l_prev
+
 
 class ElfLinkMap64(ctypes.Structure):
     _fields_: typing.ClassVar = [
@@ -470,3 +713,18 @@ class ElfLinkMap64(ctypes.Structure):
         ("l_next", Elf64_Addr),
         ("l_prev", Elf64_Addr),
     ]
+
+    def __init__(
+        self,
+        l_addr: int,
+        l_name: int,
+        l_ld: int,
+        l_next: int,
+        l_prev: int,
+    ) -> None:
+        super().__init__()
+        self.l_addr = l_addr
+        self.l_name = l_name
+        self.l_ld = l_ld
+        self.l_next = l_next
+        self.l_prev = l_prev
