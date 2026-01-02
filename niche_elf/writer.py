@@ -50,14 +50,15 @@ class ELFWriter:
             name_offsets[s.name] = len(strtab)
             strtab += s.name.encode() + b"\x00"
 
-        symtab_entries = [SymTabEntry(0, 0, 0, 0)] + [
+        symtab_entries = [SymTabEntry(0, 0, 0, 0, 0, 0, 0)] + [
             SymTabEntry(
-                name_offset=name_offsets[s.name],
+                st_name=name_offsets[s.name],
                 bind=s.bind,
                 typ=s.typ,
-                shndx=1,  # Sucks that we are hardcoding, this is .text
-                value=s.value,
-                size=s.size,
+                st_shndx=1,  # Sucks that we are hardcoding, this is .text
+                st_value=s.value,
+                st_size=s.size,
+                st_other=0,
             )
             for s in symbols
         ]
