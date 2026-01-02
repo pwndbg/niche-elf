@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
-from elftools.elf.enums import ENUM_ST_INFO_TYPE
+from . import datatypes
 
 if TYPE_CHECKING:
     import ctypes
@@ -27,7 +27,7 @@ class Symbol:
             name=name,
             bind=bind,
             # LIEF emits this type, so I trust.
-            typ=cast("int", ENUM_ST_INFO_TYPE["STT_COMMON"]),
+            typ=datatypes.Constants.STT_COMMON,
             value=addr,
             size=size,
         )
@@ -37,7 +37,7 @@ class Symbol:
         return cls(
             name=name,
             bind=bind,
-            typ=cast("int", ENUM_ST_INFO_TYPE["STT_FUNC"]),
+            typ=datatypes.Constants.STT_FUNC,
             value=addr,
             size=size,
         )
@@ -47,7 +47,7 @@ class Symbol:
         return cls(
             name=name,
             bind=bind,
-            typ=cast("int", ENUM_ST_INFO_TYPE["STT_OBJECT"]),
+            typ=datatypes.Constants.STT_OBJECT,
             value=addr,
             size=size,
         )

@@ -1,13 +1,10 @@
 """The main library entrypoint."""
 
-from typing import cast
-
-from elftools.elf.enums import ENUM_ST_INFO_BIND
-
+from . import datatypes
 from .structures import Symbol
 from .writer import ELFWriter
 
-DEFAULT_BIND: int = cast("int", ENUM_ST_INFO_BIND["STB_GLOBAL"])
+DEFAULT_BIND: int = datatypes.Constants.STB_GLOBAL
 
 
 class ELFFile:

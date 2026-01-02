@@ -3,8 +3,6 @@
 import ctypes
 from pathlib import Path
 
-from elftools.elf.constants import SH_FLAGS
-
 from . import datatypes
 from .structures import Section, SHStrTab, Symbol
 
@@ -54,7 +52,7 @@ class ELFWriter:
             header=self.ElfShdr(
                 sh_name=name_offset,
                 sh_type=datatypes.Constants.SHT_PROGBITS,
-                sh_flags=SH_FLAGS.SHF_ALLOC | SH_FLAGS.SHF_EXECINSTR,
+                sh_flags=datatypes.Constants.SHF_ALLOC | datatypes.Constants.SHF_EXECINSTR,
                 sh_addr=addr,
                 sh_size=len(data),
                 sh_link=0,
