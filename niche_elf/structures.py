@@ -17,34 +17,37 @@ class Symbol:
     bind: int
     typ: int
     value: int
-    size: int = 8
+    size: int
 
     @classmethod
-    def generic(cls, name: str, addr: int, bind: int) -> Symbol:
+    def generic(cls, name: str, addr: int, size: int, bind: int) -> Symbol:
         return cls(
             name=name,
             bind=bind,
             # LIEF emits this type, so I trust.
             typ=cast("int", ENUM_ST_INFO_TYPE["STT_COMMON"]),
             value=addr,
+            size=size,
         )
 
     @classmethod
-    def function(cls, name: str, addr: int, bind: int) -> Symbol:
+    def function(cls, name: str, addr: int, size: int, bind: int) -> Symbol:
         return cls(
             name=name,
             bind=bind,
             typ=cast("int", ENUM_ST_INFO_TYPE["STT_FUNC"]),
             value=addr,
+            size=size,
         )
 
     @classmethod
-    def object(cls, name: str, addr: int, bind: int) -> Symbol:
+    def object(cls, name: str, addr: int, size: int, bind: int) -> Symbol:
         return cls(
             name=name,
             bind=bind,
             typ=cast("int", ENUM_ST_INFO_TYPE["STT_OBJECT"]),
             value=addr,
+            size=size,
         )
 
 
@@ -73,20 +76,42 @@ class SymTabEntry:
 
 @dataclass
 class Section:
+    # `name` is not in the section header, but rather added to the shstrtab.
     name: str
-    type: int
-    flags: int = 0
-    data: bytes = b""
-    align: int = 1
-    entsize: int = 0
-    link: int = 0
-    info: int = 0
-    offset: int = 0  # set later
-    name_offset: int = 0
+    # `data` is the data of the section (also not in the section header)
+    data: bytes
+    # https://www.man7.org/linux/man-pages/man5/elf.5.html#:~:text=Section%20header%20%28Shdr
+    sh_name: int
+    sh_type: int
+    sh_flags: int
+    sh_addr: int
+    sh_offset: int
+    sh_size: int
+    sh_link: int
+    sh_info: int
+    sh_addralign: int
+    sh_entsize: int
 
     def padded_data(self) -> bytes:
-        pad_len = (-len(self.data)) % self.align
+        pad_len = (-len(self.data)) % self.sh_addralign
         return self.data + b"\x00" * pad_len
+
+    def packed_header(self) -> bytes:
+        if len(self.data) == self.sh_size:
+            raise AssertionError("Section data is not the same size as sh_size")
+        return struct.pack(
+            "<IIQQQQIIQQ",
+            self.sh_name,
+            self.sh_type,
+            self.sh_flags,
+            self.sh_addr,
+            self.sh_offset,
+            self.sh_size,
+            self.sh_link,
+            self.sh_info,
+            self.sh_addralign,
+            self.sh_entsize,
+        )
 
 
 @dataclass
@@ -111,7 +136,7 @@ class SHStrTab:
 class ELFHeader:
     def __init__(self, shoff: int = 0, shnum: int = 0, shstrndx: int = 0) -> None:
         self.e_ident = b"\x7fELF" + bytes([2, 1, 1, 0]) + b"\x00" * 8
-        self.e_type = ENUM_E_TYPE["ET_REL"]
+        self.e_type = ENUM_E_TYPE["ET_EXEC"]
         self.e_machine = ENUM_E_MACHINE["EM_X86_64"]
         self.e_version = 1
         self.e_entry = 0

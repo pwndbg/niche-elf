@@ -18,17 +18,26 @@ class ELFFile:
         self.symbols: list[Symbol] = []
         self.text = b"\x90\x90\x90"
 
-    def add_generic_symbol(self, name: str, addr: int, bind: int = DEFAULT_BIND) -> None:
+    # I'm not sure whether size=0 or size=ptrsize or whatever makes a difference as a default.
+    # I don't observer a difference.
+
+    def add_generic_symbol(
+        self,
+        name: str,
+        addr: int,
+        size: int = 0,
+        bind: int = DEFAULT_BIND,
+    ) -> None:
         """If you don't know whether the symbols is a function or global variable use this."""
-        self.symbols.append(Symbol.generic(name, addr, bind))
+        self.symbols.append(Symbol.generic(name, addr, size, bind))
 
-    def add_function(self, name: str, addr: int, bind: int = DEFAULT_BIND) -> None:
+    def add_function(self, name: str, addr: int, size: int = 0, bind: int = DEFAULT_BIND) -> None:
         """Use this if you know the symbol is a function."""
-        self.symbols.append(Symbol.function(name, addr, bind))
+        self.symbols.append(Symbol.function(name, addr, size, bind))
 
-    def add_object(self, name: str, addr: int, bind: int = DEFAULT_BIND) -> None:
+    def add_object(self, name: str, addr: int, size: int = 0, bind: int = DEFAULT_BIND) -> None:
         """Use this if you know the symbols is a global or local variable."""
-        self.symbols.append(Symbol.object(name, addr, bind))
+        self.symbols.append(Symbol.object(name, addr, size, bind))
 
     def write(self, path: str) -> None:
         writer = ELFWriter()

@@ -9,3 +9,5 @@ objcopy.elf
 mine.elf
 other.elf
 gef-kernel.elf
+build
+my-kernel.elf
