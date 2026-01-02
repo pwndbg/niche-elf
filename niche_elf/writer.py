@@ -22,7 +22,21 @@ class ELFWriter:
     """Main ELF file builder."""
 
     def __init__(self) -> None:
-        self.sections: list[Section] = []
+        null_section = Section(
+            "doesntmatter",
+            b"",
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        )
+        self.sections: list[Section] = [null_section]
         self.shstrtab = SHStrTab()
 
     def add_text_section(self, data: bytes, addr: int = 0) -> None:
@@ -63,9 +77,9 @@ class ELFWriter:
             for s in symbols
         ]
 
-        # There is an implicit NULL section at index 0. We add symtab then strtab,
-        # so the strtab index = len(self.sections) - 1 + 1 + 2
-        strtab_index = len(self.sections) + 2
+        # We add symtab then strtab,
+        # so the strtab index = len(self.sections) - 1 + 2
+        strtab_index = len(self.sections) + 1
 
         symtab_data = b"".join(e.pack() for e in symtab_entries)
         symtab_name_offset = self.shstrtab.add(".symtab")
@@ -148,6 +162,5 @@ class ELFWriter:
 
             # write section headers
             f.seek(shoff)
-            f.write(b"\x00" * 64)  # NULL section header
             for sec in [*self.sections, shstrtab_sec]:
                 f.write(sec.packed_header())
