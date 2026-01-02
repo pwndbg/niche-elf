@@ -119,7 +119,8 @@ class ELFWriter:
     def write(self, path: str) -> None:
         # compute offsets
         offset = 64  # ELF header size
-        for sec in self.sections:
+        # Set offsets (but skip the NULL section)
+        for sec in self.sections[1:]:
             offset = align(offset, sec.sh_addralign)
             sec.sh_offset = offset
             offset += len(sec.padded_data())
@@ -143,7 +144,7 @@ class ELFWriter:
         offset += len(shstrtab_sec.data)
 
         shoff = align(offset, 8)
-        shnum = len(self.sections) + 2  # NULL + all + shstrtab
+        shnum = len(self.sections) + 1  # all + shstrtab
         shstrndx = shnum - 1
 
         header = ELFHeader(shoff=shoff, shnum=shnum, shstrndx=shstrndx)
@@ -151,8 +152,8 @@ class ELFWriter:
         with Path(path).open("wb") as f:
             f.write(header.pack())
 
-            # write sections
-            for sec in self.sections:
+            # write sections (but skip the NULL section)
+            for sec in self.sections[1:]:
                 f.seek(sec.sh_offset)
                 f.write(sec.padded_data())
 
