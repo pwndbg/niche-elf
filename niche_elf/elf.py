@@ -3,6 +3,7 @@
 from . import datatypes
 from .builder import ELFBuilder
 from .structures import Symbol
+from .util import zig_target_arch_to_elf
 
 DEFAULT_BIND: int = datatypes.Constants.STB_GLOBAL
 
@@ -10,21 +11,24 @@ DEFAULT_BIND: int = datatypes.Constants.STB_GLOBAL
 class ELFFile:
     """Represents an ELF file (public API)."""
 
-    def __init__(self, textbase: int, ptrbits: int) -> None:
+    def __init__(self, textbase: int, zig_target_arch: str, ptrbits: int) -> None:
         """
-        Initialize a 32 or 64 bit ELF file.
+        Initialize an ELF file.
 
         Arguments:
             textbase: The Virtual Memory Address of the .text section of the file we are
                 trying to symbolicate. (there does not need to be an actual ".text" section there)
-            ptrbits: Can either be 32 or 64. Determines the type of the elf file.
+            zig_target_arch: The target architecture for the ELF file. Run `zig targets | less` and
+                look at the `.arch = {` structure to see the valid values.
+            ptrbits: Can either be 32 or 64. Determines the type of the ELF file.
 
         """
         if ptrbits not in {32, 64}:
             raise AssertionError(f"ptrbits must be 32 or 64, but is {ptrbits}")
 
-        self.textbase = textbase
-        self.ptrsize = ptrbits
+        self.textbase: int = textbase
+        self.zig_target_arch: str = zig_target_arch
+        self.ptrsize: int = ptrbits
         self.symbols: list[Symbol] = []
 
     # I'm not sure whether size=0 or size=ptrsize or whatever makes a difference as a default.
@@ -49,7 +53,7 @@ class ELFFile:
         self.symbols.append(Symbol.object(name, addr, size, bind))
 
     def write(self, path: str) -> None:
-        writer = ELFBuilder(self.ptrsize)
+        writer = ELFBuilder(zig_target_arch_to_elf(self.zig_target_arch), self.ptrsize)
 
         writer.add_text_section(self.textbase)
         writer.add_symbols(self.symbols)

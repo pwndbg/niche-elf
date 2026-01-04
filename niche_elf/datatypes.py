@@ -515,6 +515,18 @@ class Constants:
     # reserved  184     Reserved for future ARM use
     # unknown/reserve?  225 - 242
 
+    # Extra architectures pulled from
+    # https://github.com/ziglang/zig/blob/738d2be9d6b6ef3ff3559130c05159ef53336224/lib/std/elf.zig#L1711
+    # should probably just be taking directly from
+    # http://www.sco.com/developers/gabi/latest/ch4.eheader.html ...
+    EM_KVX = 256  # Kalray VLIW core of the MPPA processor family
+    EM_LANAI = 244  # Lanai 32-bit processor
+    EM_OR1K = 92  # OpenRISC 1000 32-bit embedded processor
+    # Parallax Propeller (P1)
+    # This value is an unofficial ELF value used in: https://github.com/parallaxinc/propgcc
+    EM_PROPELLER = 0x5072
+    EM_VE = 251  # NEC Vector Engine
+
 
 class ElfEhdr32(ctypes.Structure):
     _fields_: typing.ClassVar = [
