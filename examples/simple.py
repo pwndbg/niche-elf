@@ -1,6 +1,6 @@
 from niche_elf import ELFFile
 
-elf = ELFFile(0, "x86_64", 64)
+elf = ELFFile(0)
 elf.add_generic_symbol("mycoolsymbol", 0x1330)
 elf.add_function("mycoolhandler", 0x1370)
 elf.add_object("mycoolvariable", 0x1480)
@@ -10,7 +10,7 @@ elf.write("symbols.o")
 """
 _, elf_path = tempfile.mkstemp(prefix="symbols-", suffix=".elf")
 # Assuming the binary starts with the executable .text section.
-elf = niche_elf.ELFFile(self._connection.binary_base_addr, pwndbg.aglib.arch.ptrbits)
+elf = niche_elf.ELFFile(self._connection.binary_base_addr)
 for sym_name, sym_addr in syms_to_add:
  elf.add_generic_symbol(sym_name, sym_addr)
 
@@ -22,7 +22,7 @@ inf.add_symbol_file(elf_path, self._connection.binary_base_addr)
 """
 _, elf_path = tempfile.mkstemp(prefix="symbols-", suffix=".elf")
 base = pwndbg.aglib.kernel.arch_paginginfo().kbase
-elf = niche_elf.ELFFile(base, pwndbg.aglib.arch.ptrbits)
+elf = niche_elf.ELFFile(base)
 for sym_name, sym_type, sym_addr in syms:
     # I trust bata: bata24/gef.py:create_symboled_elf()
     if sym_type and sym_type in "abcdefghijklmnopqrstuvwxyz":

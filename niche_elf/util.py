@@ -81,4 +81,4 @@ def zig_target_arch_to_elf(zigarch: str) -> int:  # noqa: C901, PLR0911, PLR0912
         case "nvptx" | "nvptx64" | "spirv32" | "spirv64" | "wasm32" | "wasm64":
             return Constants.EM_NONE
         case _:
-            raise ValueError("Invalid zig target.")
+            raise ValueError(f"Invalid zig target {zigarch}.")

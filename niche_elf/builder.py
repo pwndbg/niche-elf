@@ -25,6 +25,25 @@ class ELFBuilder:
         # self.ElfRel = {32: datatypes.ElfRel32, 64: datatypes.ElfRel64}[ptrsize]
         # self.ElfLinkMap = {32: datatypes.ElfLinkMap32, 64: datatypes.ElfLinkMap64}[ptrsize]
 
+        self.e_ident = (
+            b"\x7fELF"
+            + bytes(
+                [
+                    # EI_CLASS (ELFCLASS32 or ELFCLASS64)
+                    ptrbits // 32,
+                    # EI_DATA (ELFDATA2LSB or ELFDATA2MSB)
+                    # We set it to little endian, and hope GDB figures it out regardless of the
+                    # target architecture.
+                    1,
+                    # EI_VERSION
+                    1,
+                    # EI_PAD
+                    0,
+                ],
+            )
+            + b"\x00" * 8
+        )
+
         # For some reason GDB does actually care about the e_machine field in the ELF header.
         # For some arches, the symbol addresses will be truncated to 32 bits, but its not
         # clear to me which arches exactly. Also, setting breakpoints can be broken
@@ -188,7 +207,7 @@ class ELFBuilder:
         shstrndx = shnum - 1
 
         header = self.ElfEhdr(
-            e_ident=b"\x7fELF" + bytes([2, 1, 1, 0]) + b"\x00" * 8,
+            e_ident=self.e_ident,
             e_type=datatypes.Constants.ET_EXEC,
             e_machine=self.e_machine,
             e_version=1,

@@ -11,18 +11,25 @@ DEFAULT_BIND: int = datatypes.Constants.STB_GLOBAL
 class ELFFile:
     """Represents an ELF file (public API)."""
 
-    def __init__(self, textbase: int, zig_target_arch: str, ptrbits: int) -> None:
+    def __init__(self, textbase: int) -> None:
         """
         Initialize an ELF file.
 
         Arguments:
             textbase: The Virtual Memory Address of the .text section of the file we are
                 trying to symbolicate. (there does not need to be an actual ".text" section there)
-            zig_target_arch: The target architecture for the ELF file. Run `zig targets | less` and
-                look at the `.arch = {` structure to see the valid values.
-            ptrbits: Can either be 32 or 64. Determines the type of the ELF file.
 
         """
+        # zig_target_arch: The target architecture for the ELF file. Run `zig targets | less` and
+        #     look at the `.arch = {` structure to see the valid values.
+        # ptrbits: Can either be 32 or 64. Determines the type of the ELF file.
+
+        # For some reason, this works for me even when debugging other architectures (e.g. aarch32),
+        # but using aarch32 to debug aarch32 doesn't work. I don't understand it. @mahaloz mentioned
+        # that GDB likes the host architecture?
+        ptrbits = 64
+        zig_target_arch = "x86_64"
+
         if ptrbits not in {32, 64}:
             raise AssertionError(f"ptrbits must be 32 or 64, but is {ptrbits}")
 
