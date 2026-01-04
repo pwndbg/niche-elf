@@ -81,8 +81,37 @@ The root cause of this issue is the same as [[#Examine doesn't work]]. bata24 ex
 
 For GDB to not throw a warning on `add-symbol-file` though, I have to make `.text` a NOBITS section (which makes sense to do anyway).
 
+### e_machine and architecture mismatch
 
-## Bata is weird
+The ELF file format specifies two interesting fields in the ELF header. `e_machine` which specifies the CPU architecture and `e_ident[EI_CLASS]` which specifies a 32 or 64-bit ELF file. I think `e_ident[EI_CLASS]` does not actually have to be the same as the target CPU architecture, but I can easily emit both so it's better safe than sorry.
+
+However, when I use qemu-user to debug an aarch32 binary and make an aarch32 file with 32-bit EI_CLASS, GDB complains. I am on an x86_64 machine and my setup is:
+```bash
+zig cc main.c --target=arm-linux-musleabi -o mainarm -static
+llvm-strip mainarm
+qemu-user -g 1234 mainarm
+
+gdb mainarm
+gdb> tar rem :1234
+gdb> add-symbol-file /tmp/symbols-qhfb5a4a.elf 0xwhatever
+error: `/tmp/symbols-qhfb5a4a.elf': can't read symbols: file format not recognized.
+# very useful GDB, thank you.
+```
+And in fact, when I use `e_machine` for x86_64 and emit an ELFCLASS64 ELF, it works perfectly! What!!
+
+I try to emit the correct target `e_machine` field by asking for the debugee CPU architecture from pwndbg, converting it to a zig CPU architecture, and then converting that to an ELF `e_machine` (looked at zig source). I can confirm that I'm emitting that field correctly using `elfview`. It is possible, maybe, that the x86_64 ELF-parsing GDB backend is forgiving to my barebones ELF, while the aarch32 one isn't? Seems very unlikely though.
+
+From what I can tell, I always get "file format not recognized" when trying to emit ELFCLASS32. Maybe I have some bug in there with crafting those ELFs. 
+
+When I was using EI_CLASS pointing to 64-bit ELF, but trying out some random e_machine values, I had the following issues:
+
++ The symbols get resolved to 32-bit addresses (the st_value gets cut off).
++ I can set a breakpoint on a symbol but execution does not actually stop there
++ SIGILL gets triggered during execution (possibly related to the line above?)
+
+mahaloz pointed out that GDB likes it when you pass in the ELF tailed for the host machine, rather than the target, which is wild. But truly, both him and bata use gcc to create a blank ELF that is valid for the current host.
+
+## Bata's code is weird
 
 He actually passes an address to `add-symbol-file`. I see no actual benefit to doing this.
 
