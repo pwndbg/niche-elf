@@ -25,8 +25,11 @@ class ELFFile:
         # ptrbits: Can either be 32 or 64. Determines the type of the ELF file.
 
         # For some reason, this works for me even when debugging other architectures (e.g. aarch32),
-        # but using aarch32 to debug aarch32 doesn't work. I don't understand it. @mahaloz mentioned
-        # that GDB likes the host architecture?
+        # and when debugging from different host architectures (e.g. aarch64). So I'm pinning it to
+        # x86_64 with ELFCLASS64 (which is what ptrbits controls) until we encounter some issues.
+        # Important to note: ELFCLASS32 does not work at all for me for some reason. And ELFCLASS64
+        # with zig_target_arch set to a more obscure architecture also doesn't work.
+        # My stupid chungus life.
         ptrbits = 64
         zig_target_arch = "x86_64"
 

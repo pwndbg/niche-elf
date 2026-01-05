@@ -117,7 +117,13 @@ When I was using EI_CLASS pointing to 64-bit ELF, but trying out some random e_m
 + I can set a breakpoint on a symbol but execution does not actually stop there
 + SIGILL gets triggered during execution (possibly related to the line above?)
 
-mahaloz pointed out that GDB likes it when you pass in the ELF tailed for the host machine, rather than the target, which is wild. But truly, both him and bata use gcc to create a blank ELF that is valid for the current host.
+mahaloz pointed out that GDB likes it when you pass in the ELF for the host machine, rather than the target, which is wild. But truly, both him and bata use gcc to create a blank ELF that is valid for the current host. I tested using x86_64 + ELFCLASS64 for:
+1. Debugging x86_64 binary on x86_64 host.
+2. Debugging aarch32 binary on x86_64 host.
+3. Debugging aarch64 binary on aarch64 host.
+
+And it all seems to work. So for now I am pinning the ELF to be x86_64 + ELFCLASS64 until we encounter an actual issue.
+
 
 ## Bata's code is weird
 
