@@ -36,6 +36,14 @@ class ELFFile:
         if ptrbits not in {32, 64}:
             raise AssertionError(f"ptrbits must be 32 or 64, but is {ptrbits}")
 
+        arch_64 = {"aarch64", "aarch64_be", "alpha", "hppa64", "loongarch64", "mips64", "mips64el", "powerpc64", "powerpc64le", "riscv64", "riscv64be", "s390x", "sparc64", "x86_64", "nvptx64", "spirv64", "wasm64", "ve"}
+        arch_32 = {"arm", "armeb", "thumb", "thumbeb", "loongarch32", "mips", "mipsel", "powerpc", "powerpcle", "riscv32", "riscv32be", "sparc", "x86", "spirv32", "wasm32", "propeller"}
+        if (ptrbits == 32 and zig_target_arch in arch_64) or \
+           (ptrbits == 64 and zig_target_arch in arch_32):
+            raise ValueError(
+                f"Architecture '{zig_target_arch}' is not compatible with ptrbits={ptrbits}"
+            )
+        
         self.textbase: int = textbase
         self.zig_target_arch: str = zig_target_arch
         self.ptrsize: int = ptrbits
