@@ -97,7 +97,7 @@ However, when I use qemu-user to debug an aarch32 binary and make an aarch32 fil
 ```bash
 zig cc main.c --target=arm-linux-musleabi -o mainarm -static
 llvm-strip mainarm
-qemu-user -g 1234 mainarm
+qemu-arm -g 1234 mainarm
 
 gdb mainarm
 gdb> tar rem :1234

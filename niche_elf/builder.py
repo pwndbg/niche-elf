@@ -149,7 +149,9 @@ class ELFBuilder:
                 # FIXME: Check does GDB actually look at this?
                 sh_info=1,
                 sh_addralign=8,
-                sh_entsize=24,
+                # Fucking crucial, or you'll fail a check in GDB's bfd/elf.c:bfd_section_from_shdr
+                # if (hdr->sh_entsize != bed->s->sizeof_sym)
+                sh_entsize=ctypes.sizeof(self.ElfSym),
                 sh_offset=-1,
             ),
         )

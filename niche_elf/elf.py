@@ -27,8 +27,8 @@ class ELFFile:
         # For some reason, this works for me even when debugging other architectures (e.g. aarch32),
         # and when debugging from different host architectures (e.g. aarch64). So I'm pinning it to
         # x86_64 with ELFCLASS64 (which is what ptrbits controls) until we encounter some issues.
-        # Important to note: ELFCLASS32 does not work at all for me for some reason. And ELFCLASS64
-        # with zig_target_arch set to a more obscure architecture also doesn't work.
+        # Important to note: ELFCLASS64 with zig_target_arch set to a more obscure architecture
+        # doesn't work.
         # My stupid chungus life.
         ptrbits = 64
         zig_target_arch = "x86_64"
