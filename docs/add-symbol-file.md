@@ -93,24 +93,6 @@ For GDB to not throw a warning on `add-symbol-file` though, I have to make `.tex
 
 The ELF file format specifies two interesting fields in the ELF header. `e_machine` which specifies the CPU architecture and `e_ident[EI_CLASS]` which specifies a 32 or 64-bit ELF file. I think `e_ident[EI_CLASS]` does not actually have to be the same as the target CPU architecture, but I can easily emit both so it's better safe than sorry.
 
-However, when I use qemu-user to debug an aarch32 binary and make an aarch32 file with 32-bit EI_CLASS, GDB complains. I am on an x86_64 machine and my setup is:
-```bash
-zig cc main.c --target=arm-linux-musleabi -o mainarm -static
-llvm-strip mainarm
-qemu-arm -g 1234 mainarm
-
-gdb mainarm
-gdb> tar rem :1234
-gdb> add-symbol-file /tmp/symbols-qhfb5a4a.elf 0xwhatever
-error: `/tmp/symbols-qhfb5a4a.elf': can't read symbols: file format not recognized.
-# very useful GDB, thank you.
-```
-And in fact, when I use `e_machine` for x86_64 and emit an ELFCLASS64 ELF, it works perfectly! What!!
-
-I try to emit the correct target `e_machine` field by asking for the debugee CPU architecture from pwndbg, converting it to a zig CPU architecture, and then converting that to an ELF `e_machine` (looked at zig source). I can confirm that I'm emitting that field correctly using `elfview`. It is possible, maybe, that the x86_64 ELF-parsing GDB backend is forgiving to my barebones ELF, while the aarch32 one isn't? Seems very unlikely though.
-
-From what I can tell, I always get "file format not recognized" when trying to emit ELFCLASS32. Maybe I have some bug in there with crafting those ELFs. 
-
 When I was using EI_CLASS pointing to 64-bit ELF, but trying out some random e_machine values, I had the following issues:
 
 + The symbols get resolved to 32-bit addresses (the st_value gets cut off).
@@ -158,3 +140,85 @@ Passing in an address also isn't necessary for the [[#Examine doesn't work]] [[#
 ### ELF type
 
 An ELF file can be one of a few types (determined by the e_type field in the ELF header), namely: REL, EXEC, DYN, and CORE. The LIEF way to craft the file emits an EXEC. Bata also emits an EXEC. I think it doesn't matter because I don't see any noticable difference in behaviour when I try to play around with it.
+
+## Debugging "file format not recognized"
+
+I had a bug where I was crafting malformed ELFCLASS32 files (https://github.com/pwndbg/niche-elf/commit/67f61dc4aef76da39453fffe710d4a187886a1c9). This is really a pain to debug, so I will outline the steps here.
+
+We will be crafting an aarch32 ELFCLASS32 elf file. To eliminate potential issues with mismatching the ELF and the actual target architecture, we will debug an actual aarch32 binary.
+
+I am on a x86_64 host. First compile the arm binary:
+```bash
+zig cc main.c --target=arm-linux-musleabi -o mainarm -static
+llvm-strip mainarm
+```
+Now we can run the binary like this:
+```bash
+qemu-arm -g 1234 mainarm
+```
+and connect to it like this:
+```bash
+gdb mainarm
+pwndbg> tar rem :1234
+```
+Now to test niche-elf creating an aarch32 ELFCLASS32 file we will leverage the pwndbg decompiler integration, so we have something realistic (actually we do it because I'm too lazy to get a better setup). First, edit `niche_elf/__init__.py:ELFFile:__init__()` to set these two variables to their new values:
+```python
+        ptrbits = 32
+        zig_target_arch = "arm"
+```
+(we find the correct zig_target_arch string by checking `niche_elf/util.py:zig_target_arch_to_elf()`). Now open the binary in a decompiler like `ida mainarm` and run decomp2dbg with Ctrl+Shift+D.
+
+Next we put this into the pwndbg `pyproject.toml` in the `[tool.uv.sources]` section.
+```
+niche-elf = { path = "/path/to/niche-elf/", editable=true}
+```
+And rerun `uv sync --all-extras --all-groups` to make pwndbg temporarily track the local edits in niche-elf. Then we make a temporary edit in `pwndbg/integration/__init__.py:update_symbols()` to print the path of the ELF file, and to not have it deleted:
+```python
+        print("[+] written elf to ", elf_path) # <--- added this line
+        inf.add_symbol_file(elf_path, self._connection.binary_base_addr)
+        self._latest_symbol_file_path = elf_path
+        # Delete the file after GDB closes the file descriptor.
+        # os.unlink(elf_path)                  # <--- commented this line
+```
+
+Cool, now we start a debugging session with qemu-user as described above. And after connecting we run `di sync`. Now the symbol file will be created, we will know the name, and it will not be deleted. We expect a gdb.error exception with "file format not recognized". We copy the file to a local folder
+```bash
+cp /tmp/symbols-qhfb5a4a.elf ./forarm
+```
+and exit. We can check the ELF out with `elfview forarm`.
+
+Now we are going to debug GDB, so it's important to have a debug build of it. See here how to build it: https://pwndbg.re/dev/contributing/setup-pwndbg-dev/#running-with-gdb . If you `sudo make install`ed it, it should be in `/usr/local/bin/gdb`, while the distro-package-installed version should be in `/usr/bin/gdb`.
+
+Start a debugging session as described before:
+```bash
+# one terminal
+qemu-arm -g 1234 mainarm
+
+# another terminal
+/usr/local/bin/gdb --nx mainarm
+(gdb) tar rem :1234
+```
+You can check that doing `add-symbol-file mainarm` does in fact give you the error. Now lets attach to that GDB with pwndbg:
+```bash
+echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+gdb /usr/local/bin/gdb
+pwndbg> attachp gdb
+pwndbg> b bfd_check_format
+pwndbg> continue
+```
+And now actually run the command to trigger the breakpoint:
+```bash
+(gdb) add-symbol-file mainarm
+# The breakpoint in pwndbg> should be hit now.
+```
+GDB performs this check by trying the ELF against all the targets it supports, and sees if anything sticks. You can see what target is currently being attempted with `p abfd->xvec`. The actual checks are dispatched by the `BFD_SEND_FMT` calls inside `bfd_check_format`. This will go into a function that is called `elf_object_p` in the code, but exposed as two symbols `bfd_elf64_object_p` and `bfd_elf32_object_p` in the debugger. This function performs the ELF checks. Btw "BFD" refers to ELF files, it is short for Binary File Descriptor. Since we know which target we want to match, we can set a breakpoint on it with:
+```bash
+pwndbg> b bfd_elf32_object_p if abfd->xvec == &arm_elf32_le_vec
+# le is little endian
+# elf32 is ELFCLASS32
+# arm is aarch32
+# Note: The breakpoint that I actually used is
+# b bfd/elfcode.h:536 if abfd->xvec == &arm_elf32_le_vec
+pwndbg> continue
+```
+Now we simply step through the code and see where we hit a `goto got_wrong_format_error;` or a `goto got_no_match;` and figure out what is wrong from there, the code is actually quite nicely commented.
