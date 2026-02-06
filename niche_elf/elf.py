@@ -52,20 +52,20 @@ class ELFFile:
         bind: int = DEFAULT_BIND,
     ) -> None:
         """If you don't know whether the symbols is a function or global variable use this."""
-        self.symbols.append(Symbol.generic(name, addr, size, bind))
+        self.symbols.append(Symbol.generic(name, addr - self.textbase, size, bind))
 
     def add_function(self, name: str, addr: int, size: int = 0, bind: int = DEFAULT_BIND) -> None:
         """Use this if you know the symbol is a function."""
-        self.symbols.append(Symbol.function(name, addr, size, bind))
+        self.symbols.append(Symbol.function(name, addr - self.textbase, size, bind))
 
     def add_object(self, name: str, addr: int, size: int = 0, bind: int = DEFAULT_BIND) -> None:
         """Use this if you know the symbols is a global or local variable."""
-        self.symbols.append(Symbol.object(name, addr, size, bind))
+        self.symbols.append(Symbol.object(name, addr - self.textbase, size, bind))
 
     def write(self, path: str) -> None:
         writer = ELFBuilder(zig_target_arch_to_elf(self.zig_target_arch), self.ptrsize)
 
-        writer.add_text_section(self.textbase)
+        writer.add_text_section(0)
         writer.add_symbols(self.symbols)
 
         writer.write(path)

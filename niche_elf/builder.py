@@ -184,6 +184,8 @@ class ELFBuilder:
         # Fix section offsets now. (but skip the NULL section)
         for sec in self.sections[1:]:
             offset = align(offset, sec.header.sh_addralign)
+            if sec.name == ".text":
+                sec.header.sh_addr = offset
             sec.header.sh_offset = offset
             offset += len(sec.padded_data())
 
@@ -212,7 +214,7 @@ class ELFBuilder:
 
         header = self.ElfEhdr(
             e_ident=self.e_ident,
-            e_type=datatypes.Constants.ET_EXEC,
+            e_type=datatypes.Constants.ET_DYN,
             e_machine=self.e_machine,
             e_version=1,
             e_entry=0,
