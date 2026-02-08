@@ -246,6 +246,8 @@ class ELFBuilder:
             p_paddr=0,
             # .text is NOBITS
             p_filesz=0,
+            # For some reason this is the most important thing in the world.
+            # https://github.com/llvm/llvm-project/issues/179839#issuecomment-3868134550
             p_memsz=0x4a2,
             p_align=self.sections[1].header.sh_addralign,
         )
