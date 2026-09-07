@@ -92,12 +92,12 @@ class ELFBuilder:
         self.sections.append(sec)
 
     def add_symbols(self, symbols: list[Symbol]) -> None:
-        strtab = b"\x00"
+        strtab = bytearray(b"\x00")
         name_offsets = {}
         max_addr: int = 0
         for s in symbols:
             name_offsets[s.name] = len(strtab)
-            strtab += s.name.encode() + b"\x00"
+            strtab.extend(s.name.encode() + b"\x00")
             max_addr = max(max_addr, s.value + s.size)
 
         # Fix .text section size so examining in GDB works properly.
@@ -162,7 +162,7 @@ class ELFBuilder:
         strtab_name_offset = self.shstrtab.add(".strtab")
         strtab_sec = Section(
             name=".strtab",
-            data=strtab,
+            data=bytes(strtab),
             header=self.ElfShdr(
                 sh_name=strtab_name_offset,
                 sh_type=datatypes.Constants.SHT_STRTAB,
